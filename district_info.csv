@@ -1,0 +1,6 @@
+DISTRICT_NAME,IC_SITE,DO_LOGIN_CHECK
+invalid url test,https://!@#$%^&*(),true
+missing schema test,sus.com,true
+invalid schema test,hps://qwerty,true
+Non-existant Site Test,https://www.thisurl_shouldnot--resolve.corn,true
+Your District,https://your_district.infinitecampus.org/campus/your_district.jsp,true
