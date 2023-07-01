@@ -81,6 +81,7 @@ def test_results_description(results, to_show):
 def send_emails(message, email_info):
     subs = email_info["SUBSCRIBERS"].split(',')
     for s in subs:
+        s = s.strip()
         d = email_info.copy()
         d['SUBSCRIBER'] = s
         send_email(d)
