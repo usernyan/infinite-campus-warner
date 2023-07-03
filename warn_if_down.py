@@ -21,7 +21,7 @@ def main():
     with open("district_info.csv") as csv_file:
         district_sites = csv.DictReader(csv_file)
         test_results = process_sites(district_sites, cfg)
-    print(test_results)
+    # print(test_results)
     #NOTE:
 
     fields_to_show = ["DISTRICT_NAME", "TEST_200_STATUS", "LOGIN_SUCCESS", "TEST_DATETIME"]
@@ -31,7 +31,7 @@ def main():
     #condsider replacing this with code that leverages the .csv library,
     #if the message format can be made readable
     results_table = test_results_description(test_results, fields_to_show)
-    print(results_table)
+    # print(results_table)
 
     has_failure = False
     for d in test_results:
@@ -100,7 +100,8 @@ def send_email(message, email_info):
     msg_mime = "Mime-Type: text/plain"
     meta_msg = "\n".join([msg_from, msg_to, msg_sub, msg_mime]) + "\n\n"
     message = meta_msg + message
-    print(message)
+    print('\n' + meta_msg.strip() + '\n')
+    # print(message)
     #connect to the mail server and send the email
     try:
         with SMTP(email_info["HOST"], int(email_info["PORT"])) as smtp:
