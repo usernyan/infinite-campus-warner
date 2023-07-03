@@ -1,6 +1,7 @@
 import csv
 import requests
 from smtplib import SMTP
+from smtplib import SMTPException
 import configparser
 import datetime
 import os
@@ -31,6 +32,12 @@ def main():
     #if the message format can be made readable
     results_table = test_results_description(test_results, fields_to_show)
     print(results_table)
+
+    has_failure = False
+    for d in test_results:
+        for k in fields_to_show:
+            test_val = d.get(k)
+            has_failure |= test_val == False
     
     if cfg["GENERAL"].getboolean("WRITE_OUTPUT"):
         #write csv file
@@ -44,8 +51,8 @@ def main():
             for d in test_results:
                 writer.writerow(d)
     
-    if cfg["GENERAL"].getboolean("SEND_MAIL"):
-        send_email(results_table, cfg["MAIL_INFO"])
+    if cfg["GENERAL"].getboolean("SEND_MAIL") or (cfg["GENERAL"].getboolean("SEND_MAIL_ON_FAIL") and has_failure):
+        send_emails(results_table, cfg["MAIL_INFO"])
 
 
 def test_results_description(results, to_show):
@@ -82,9 +89,8 @@ def send_emails(message, email_info):
     subs = email_info["SUBSCRIBERS"].split(',')
     for s in subs:
         s = s.strip()
-        d = email_info.copy()
-        d['SUBSCRIBER'] = s
-        send_email(d)
+        email_info["SUBSCRIBER"] = s
+        send_email(message, email_info)
 
 def send_email(message, email_info):
     #automatically add the header
@@ -96,10 +102,14 @@ def send_email(message, email_info):
     message = meta_msg + message
     print(message)
     #connect to the mail server and send the email
-    with SMTP(email_info["HOST"], int(email_info["PORT"])) as smtp:
-        #print(smtp.noop())
-        smtp.login(email_info["USER"], email_info["PASS"])
-        smtp.sendmail(email_info["USER"], email_info["SUBSCRIBER"],message)
+    try:
+        with SMTP(email_info["HOST"], int(email_info["PORT"])) as smtp:
+            #print(smtp.noop())
+            smtp.login(email_info["USER"], email_info["PASS"])
+            smtp.sendmail(email_info["USER"], email_info["SUBSCRIBER"],message)
+    except SMTPException as e:
+        print("Error sending email... Check your email server and config. Details below")
+        print(e)
 
 #for each site dict in the iterable, chcek if it's down. Add that as a key to the dict and return it
 def process_sites(sites, config):
